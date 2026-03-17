@@ -1,77 +1,85 @@
-# US Job Market Visualizer
+# 美国职业市场可视化（中文版）
 
-A research tool for visually exploring Bureau of Labor Statistics [Occupational Outlook Handbook](https://www.bls.gov/ooh/) data. This is not a report, a paper, or a serious economic publication — it is a development tool for exploring BLS data visually.
+本仓库是对原项目 [karpathy/jobs](https://github.com/karpathy/jobs) 的中文化版本，界面文案已本地化为中文，功能与数据流程保持一致。
 
-**Live demo: [karpathy.ai/jobs](https://karpathy.ai/jobs/)**
+## 在线版
 
-## What's here
+GitHub Pages 演示（可在仓库设置中配置）：
 
-The BLS OOH covers **342 occupations** spanning every sector of the US economy, with detailed data on job duties, work environment, education requirements, pay, and employment projections. We scraped all of it and built an interactive treemap visualization where each rectangle's **area** is proportional to total employment and **color** shows the selected metric — toggle between BLS projected growth outlook, median pay, education requirements, and AI exposure.
+- 仓库 Pages 页面：`https://tianyu19920816.github.io/jobs-cn/`
 
-## LLM-powered coloring
+## 项目简介
 
-The repo includes scrapers, parsers, and a pipeline for writing custom LLM prompts to score and color occupations by any criteria. You write a prompt, the LLM scores each occupation, and the treemap colors accordingly. The "Digital AI Exposure" layer is one example — it estimates how much current AI (which is primarily digital) will reshape each occupation. But you could write a different prompt for any question — e.g. exposure to humanoid robotics, offshoring risk, climate impact — and re-run the pipeline to get a different coloring. See `score.py` for the prompt and scoring pipeline.
+该项目是一个开发者工具，用于可视化美国劳工统计局（BLS）《职业展望手册》（Occupational Outlook Handbook）中的职业数据。页面展示了 **342 个职业**，覆盖美国经济中的约 **1.43 亿** 岗位。
 
-**What "AI Exposure" is NOT:**
-- It does **not** predict that a job will disappear. Software developers score 9/10 because AI is transforming their work — but demand for software could easily *grow* as each developer becomes more productive.
-- It does **not** account for demand elasticity, latent demand, regulatory barriers, or social preferences for human workers.
-- The scores are rough LLM estimates (Gemini Flash via OpenRouter), not rigorous predictions. Many high-exposure jobs will be reshaped, not replaced.
+当前版本支持按下列维度着色与观察：
 
-## Data pipeline
+- BLS 就业前景（就业增长变化）
+- 工资中位数
+- 教育要求
+- 数字化 AI 暴露度（LLM 打分）
 
-1. **Scrape** (`scrape.py`) — Playwright (non-headless, BLS blocks bots) downloads raw HTML for all 342 occupation pages into `html/`.
-2. **Parse** (`parse_detail.py`, `process.py`) — BeautifulSoup converts raw HTML into clean Markdown files in `pages/`.
-3. **Tabulate** (`make_csv.py`) — Extracts structured fields (pay, education, job count, growth outlook, SOC code) into `occupations.csv`.
-4. **Score** (`score.py`) — Sends each occupation's Markdown description to an LLM with a scoring rubric. Each occupation gets an AI Exposure score from 0-10 with a rationale. Results saved to `scores.json`. Fork this to write your own prompts.
-5. **Build site data** (`build_site_data.py`) — Merges CSV stats and AI exposure scores into a compact `site/data.json` for the frontend.
-6. **Website** (`site/index.html`) — Interactive treemap visualization with four color layers: BLS Outlook, Median Pay, Education, and Digital AI Exposure.
+## 数据流程
 
-## Key files
+1. `scrape.py` — 使用 Playwright 抓取 BLS 的原始职业页面到 `html/`。
+2. `parse_detail.py`、`process.py` — 用 BeautifulSoup 解析 `html/` 并生成 `pages/` 的 Markdown。
+3. `make_csv.py` — 生成结构化字段（工资、教育、岗位数、增长率、SOC code）到 `occupations.csv`。
+4. `score.py` — 调用 LLM 给每个职业打分（保留原始 prompt 流程），生成 `scores.json`。
+5. `build_site_data.py` — 合并 CSV 与评分，输出前端文件 `site/data.json`。
+6. `site/index.html` — 树图可视化页面（当前仓库已中文化）。
 
-| File | Description |
-|------|-------------|
-| `occupations.json` | Master list of 342 occupations with title, URL, category, slug |
-| `occupations.csv` | Summary stats: pay, education, job count, growth projections |
-| `scores.json` | AI exposure scores (0-10) with rationales for all 342 occupations |
-| `prompt.md` | All data in a single file, designed to be pasted into an LLM for analysis |
-| `html/` | Raw HTML pages from BLS (source of truth, ~40MB) |
-| `pages/` | Clean Markdown versions of each occupation page |
-| `site/` | Static website (treemap visualization) |
+## 关键文件
 
-## LLM prompt
+| 文件 | 说明 |
+|---|---|
+| `occupations.json` | 342 个职业的主列表（标题、URL、分类、slug） |
+| `occupations.csv` | 汇总指标：工资、教育、岗位数、增长预估 |
+| `scores.json` | 342 个职业的 AI 暴露评分与评分理由 |
+| `prompt.md` | 用于打分的提示词模板（可直接粘贴到 LLM） |
+| `site/data.json` | 前端可视化输入数据 |
+| `site/index.html` | 中文可视化页面 |
 
-[`prompt.md`](prompt.md) packages all the data — aggregate statistics, tier breakdowns, exposure by pay/education, BLS growth projections, and all 342 occupations with their scores and rationales — into a single file (~45K tokens) designed to be pasted into an LLM. This lets you have a data-grounded conversation about AI's impact on the job market without needing to run any code. Regenerate it with `uv run python make_prompt.py`.
+## 快速启动
 
-## Setup
-
-```
+```bash
 uv sync
 uv run playwright install chromium
 ```
 
-Requires an OpenRouter API key in `.env`:
-```
+`.env` 需要设置：
+
+```bash
 OPENROUTER_API_KEY=your_key_here
 ```
 
-## Usage
+### 常用命令
 
 ```bash
-# Scrape BLS pages (only needed once, results are cached in html/)
+# 抓取 BLS 页面（首次运行一次，html/ 会缓存）
 uv run python scrape.py
 
-# Generate Markdown from HTML
+# 由 HTML 生成 markdown
 uv run python process.py
 
-# Generate CSV summary
+# 生成汇总 csv
 uv run python make_csv.py
 
-# Score AI exposure (uses OpenRouter API)
+# 计算 AI 暴露评分（需要 OpenRouter）
 uv run python score.py
 
-# Build website data
+# 生成页面数据
 uv run python build_site_data.py
 
-# Serve the site locally
+# 本地预览中文页面
 cd site && python -m http.server 8000
 ```
+
+## GitHub Pages 部署（已配置）
+
+仓库已新增 GitHub Actions 工作流：`.github/workflows/deploy-pages.yml`，会将 `site/` 目录内容发布到 GitHub Pages。
+
+部署步骤：
+
+1. 推送到 `master` 分支（或手动触发 workflow）。
+2. 在仓库 Settings → Pages 中将 source 选择为 `GitHub Actions`。
+3. 访问你的 Pages 地址：`https://tianyu19920816.github.io/jobs-cn/`。
