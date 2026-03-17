@@ -6,7 +6,9 @@
 
 GitHub Pages 演示（可在仓库设置中配置）：
 
-- 仓库 Pages 页面：`https://tianyu19920816.github.io/jobs-cn/`
+<a href="https://shiyuzi-ship-it.github.io/jobs-cn/" target="_blank" rel="noopener noreferrer">
+  <img src="https://img.shields.io/badge/GitHub%20Pages-访问中文版-2ea44f?style=for-the-badge" alt="访问中文版">
+</a>
 
 ## 项目简介
 
@@ -81,5 +83,6 @@ cd site && python -m http.server 8000
 部署步骤：
 
 1. 推送到 `master` 分支（或手动触发 workflow）。
-2. 在仓库 Settings → Pages 中将 source 选择为 `GitHub Actions`。
-3. 访问你的 Pages 地址：`https://tianyu19920816.github.io/jobs-cn/`。
+2. 第一次部署前，在仓库 `Settings → Pages` 中启用 Pages，并将发布来源选择为 `GitHub Actions`。
+3. 如果 workflow 在 `Setup Pages` 步骤报 `Get Pages site failed` 或 `HttpError: Not Found`，说明这一步还没有启用成功。
+4. 访问你的 Pages 地址：[https://shiyuzi-ship-it.github.io/jobs-cn/](https://shiyuzi-ship-it.github.io/jobs-cn/)。
