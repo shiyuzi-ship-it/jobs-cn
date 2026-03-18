@@ -1,88 +1,64 @@
 # 美国职业市场可视化（中文版）
 
-本仓库是对原项目 [karpathy/jobs](https://github.com/karpathy/jobs) 的中文化版本，界面文案已本地化为中文，功能与数据流程保持一致。
+这是一个面向中文读者的职业数据可视化页面，基于美国劳工统计局（BLS）《职业展望手册》整理而成。你可以用树图的方式快速浏览美国职业结构，观察不同职业的岗位规模、薪资水平、教育要求、就业前景，以及数字化 AI 暴露度。
 
-## 在线版
-
-GitHub Pages 演示（可在仓库设置中配置）：
+## 在线访问
 
 <a href="https://shiyuzi-ship-it.github.io/jobs-cn/" target="_blank" rel="noopener noreferrer">
   <img src="https://img.shields.io/badge/GitHub%20Pages-访问中文版-2ea44f?style=for-the-badge" alt="访问中文版">
 </a>
 
-## 项目简介
+页面地址：
 
-该项目是一个开发者工具，用于可视化美国劳工统计局（BLS）《职业展望手册》（Occupational Outlook Handbook）中的职业数据。页面展示了 **342 个职业**，覆盖美国经济中的约 **1.43 亿** 岗位。
+[https://shiyuzi-ship-it.github.io/jobs-cn/](https://shiyuzi-ship-it.github.io/jobs-cn/)
 
-当前版本支持按下列维度着色与观察：
+## 页面内容
 
-- BLS 就业前景（就业增长变化）
+页面收录了 **342 个职业**，覆盖美国经济中的约 **1.43 亿个岗位**。
+
+每个矩形代表一个职业：
+
+- 面积表示岗位数量
+- 颜色表示当前选择的观察维度
+- 点击职业块可跳转到对应的 BLS 原始页面
+
+当前可切换的维度包括：
+
+- 就业前景
 - 工资中位数
 - 教育要求
-- 数字化 AI 暴露度（LLM 打分）
+- 数字化 AI 暴露度
 
-## 数据流程
+## 数据来源
 
-1. `scrape.py` — 使用 Playwright 抓取 BLS 的原始职业页面到 `html/`。
-2. `parse_detail.py`、`process.py` — 用 BeautifulSoup 解析 `html/` 并生成 `pages/` 的 Markdown。
-3. `make_csv.py` — 生成结构化字段（工资、教育、岗位数、增长率、SOC code）到 `occupations.csv`。
-4. `score.py` — 调用 LLM 给每个职业打分（保留原始 prompt 流程），生成 `scores.json`。
-5. `build_site_data.py` — 合并 CSV 与评分，输出前端文件 `site/data.json`。
-6. `site/index.html` — 树图可视化页面（当前仓库已中文化）。
+本页面主要基于美国劳工统计局（BLS）的职业展望手册数据：
 
-## 关键文件
+- BLS Occupational Outlook Handbook: [https://www.bls.gov/ooh/](https://www.bls.gov/ooh/)
 
-| 文件 | 说明 |
-|---|---|
-| `occupations.json` | 342 个职业的主列表（标题、URL、分类、slug） |
-| `occupations.csv` | 汇总指标：工资、教育、岗位数、增长预估 |
-| `scores.json` | 342 个职业的 AI 暴露评分与评分理由 |
-| `prompt.md` | 用于打分的提示词模板（可直接粘贴到 LLM） |
-| `site/data.json` | 前端可视化输入数据 |
-| `site/index.html` | 中文可视化页面 |
+## 关于 AI 暴露度
 
-## 快速启动
+“数字化 AI 暴露度”是一个辅助观察指标，用来估计 AI 对不同职业工作方式的潜在重塑程度。
+
+它不是失业预测，也不代表某个职业一定会被替代。更准确地说，它反映的是：当工作内容越偏向数字化、信息处理、写作、分析、沟通或生成时，AI 对该职业产生影响的可能性通常越高。
+
+## 来源项目
+
+本仓库基于原项目 [karpathy/jobs](https://github.com/karpathy/jobs) 制作，并在其基础上完成了中文化改写与页面适配。原项目作者整理了抓取、清洗、评分和可视化这套完整流程，本仓库保留其数据结构与展示逻辑，并提供中文版本页面。
+
+## 本地运行
+
+如果你希望在本地打开页面，可以使用：
 
 ```bash
-uv sync
-uv run playwright install chromium
+cd site && python3 -m http.server 8000
 ```
 
-`.env` 需要设置：
+然后访问 `http://localhost:8000`。
 
-```bash
-OPENROUTER_API_KEY=your_key_here
-```
+## 部署说明
 
-### 常用命令
+仓库已配置 GitHub Pages 工作流。首次启用时，需要在仓库的 `Settings -> Pages` 中将发布来源设置为 `GitHub Actions`。
 
-```bash
-# 抓取 BLS 页面（首次运行一次，html/ 会缓存）
-uv run python scrape.py
+部署完成后，页面地址为：
 
-# 由 HTML 生成 markdown
-uv run python process.py
-
-# 生成汇总 csv
-uv run python make_csv.py
-
-# 计算 AI 暴露评分（需要 OpenRouter）
-uv run python score.py
-
-# 生成页面数据
-uv run python build_site_data.py
-
-# 本地预览中文页面
-cd site && python -m http.server 8000
-```
-
-## GitHub Pages 部署（已配置）
-
-仓库已新增 GitHub Actions 工作流：`.github/workflows/deploy-pages.yml`，会将 `site/` 目录内容发布到 GitHub Pages。
-
-部署步骤：
-
-1. 推送到 `master` 分支（或手动触发 workflow）。
-2. 第一次部署前，在仓库 `Settings → Pages` 中启用 Pages，并将发布来源选择为 `GitHub Actions`。
-3. 如果 workflow 在 `Setup Pages` 步骤报 `Get Pages site failed` 或 `HttpError: Not Found`，说明这一步还没有启用成功。
-4. 访问你的 Pages 地址：[https://shiyuzi-ship-it.github.io/jobs-cn/](https://shiyuzi-ship-it.github.io/jobs-cn/)。
+[https://shiyuzi-ship-it.github.io/jobs-cn/](https://shiyuzi-ship-it.github.io/jobs-cn/)
